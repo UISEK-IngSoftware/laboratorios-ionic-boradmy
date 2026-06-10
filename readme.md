@@ -2,9 +2,9 @@
 
 ## Información del Estudiante
 
-- **Nombre:** [Tu nombre completo aquí]
-- **Carrera:** [Tu carrera]
-- **Fecha de inicio:** [Fecha]
+- **Nombre:** Stiveen Paredes
+- **Carrera:** Ingeniería en Software
+- **Fecha de inicio:** 04 de junio de 2026
 
 ---
 
