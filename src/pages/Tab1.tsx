@@ -6,12 +6,31 @@ import {
   IonPage,
   IonTitle,
   IonToolbar,
+  useIonViewWillEnter,
 } from "@ionic/react";
 
 import "./Tab1.css";
 import RepoItem from "../components/RepoItem";
+import { Repository } from "../interfaces/Repository";
+import { fetchRepositories } from "../services/GithubService";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const Tab1: React.FC = () => {
+  const [repos, setRepos] = React.useState<Repository[]>([]);
+  const [loading, setLoading] = React.useState(false);
+
+  const loadRepositories = async () => {
+    setLoading(true);
+    const reposData = await fetchRepositories();
+    setRepos(reposData);
+    setLoading(false);
+  };
+
+  useIonViewWillEnter(() => {
+    loadRepositories();
+  });
+
+
   return (
     <IonPage>
       <IonHeader>
@@ -26,43 +45,20 @@ const Tab1: React.FC = () => {
             <IonTitle size="large">Repositorios</IonTitle>
           </IonToolbar>
         </IonHeader>
-
-        <IonList>
-          <RepoItem
-            name="Repositorio 1"
-            description="Descripción del repositorio 1"
-            language="JavaScript"
-            avatarUrl="https://avatars.githubusercontent.com/u/48026030?v=4"
-          />
-
-          <RepoItem
-            name="Repositorio 2"
-            description="Descripción del repositorio 2"
-            language="Python"
-            avatarUrl="https://avatars.githubusercontent.com/u/48026030?v=4"
-          />
-
-          <RepoItem
-            name="Repositorio 3"
-            description="Descripción del repositorio 3"
-            language="Java"
-            avatarUrl="https://avatars.githubusercontent.com/u/48026030?v=4"
-          />
-
-          <RepoItem
-            name="Repositorio 4"
-            description="Descripción del repositorio 4"
-            language="TypeScript"
-            avatarUrl="https://avatars.githubusercontent.com/u/48026030?v=4"
-          />
-
-          <RepoItem
-            name="Repositorio 5"
-            description="Descripción del repositorio 5"
-            language="C#"
-            avatarUrl="https://avatars.githubusercontent.com/u/48026030?v=4"
-          />
-        </IonList>
+        {!loading && repos.length > 0 && (
+          <IonList>
+            {repos.map((repo) => (
+              <RepoItem
+                key={repo.id} {...repo} />
+            ))}
+          </IonList>
+        )}
+        <LoadingSpinner isOpen={loading} />
+        {!loading && repos.length === 0 && (
+          <div className="no-repos">
+            <p>No se encontraron repositorios.</p>
+          </div>
+        )}
       </IonContent>
     </IonPage>
   );
