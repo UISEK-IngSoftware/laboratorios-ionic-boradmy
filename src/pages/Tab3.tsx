@@ -1,8 +1,26 @@
-import { IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
-import ExploreContainer from '../components/ExploreContainer';
+import { IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonPage, IonTitle, IonToolbar, useIonViewDidEnter } from '@ionic/react';
 import './Tab3.css';
+import React from 'react';
+import { GithubUser } from '../interfaces/GithubUser';
+import { getUserInfo } from '../services/GithubService';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Tab3: React.FC = () => {
+  const [userInfo, setUserInfo] = React.useState<GithubUser | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  const loadUserInfo = async () => {
+    setLoading(true);
+    const userData = await getUserInfo();
+    setUserInfo(userData);
+    setLoading(false);
+  };
+
+  useIonViewDidEnter(() => {
+    loadUserInfo();
+  });
+
+
   return (
     <IonPage>
       <IonHeader>
@@ -18,17 +36,17 @@ const Tab3: React.FC = () => {
         </IonHeader>
         <div className="card-conteiner">
           <IonCard>
-            <img src="https://avatars.githubusercontent.com/u/235414844?s=400&u=22ac72cc5af68055bb634db666d6ebb944084347&v=4" alt="Foto de perfil" className="profile-image"/>
+            <img alt={userInfo?.name} src={userInfo?.avatar_url} />
             <IonCardHeader>
-              <IonCardTitle>Stiveen Paredes</IonCardTitle>
-              <IonCardSubtitle>Desarrollador de Software</IonCardSubtitle>
+              <IonCardTitle>{userInfo?.name}</IonCardTitle>
+              <IonCardSubtitle>{userInfo?.login}</IonCardSubtitle>
             </IonCardHeader>
             <IonCardContent>
-              <p>Hola, soy Stiveen Paredes, un apasionado desarrollador de software con experiencia en el desarrollo de aplicaciones móviles y web. Me encanta aprender nuevas tecnologías y enfrentar desafíos de programación.</p>
-              <p>En mi tiempo libre, disfruto contribuyendo a proyectos de código abierto y explorando nuevas tendencias en el mundo del desarrollo de software.</p>
+              <p>{userInfo?.bio}</p>
             </IonCardContent>
           </IonCard>
         </div>
+        <LoadingSpinner isOpen={loading} />
       </IonContent>
     </IonPage>
   );
