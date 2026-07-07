@@ -9,11 +9,15 @@ import {
   IonToolbar,
   useIonViewWillEnter,
 } from "@ionic/react";
+import { useHistory } from "react-router-dom";
 
 import "./Tab1.css";
 import RepoItem from "../components/RepoItem";
 import { Repository } from "../interfaces/Repository";
-import { fetchRepositories } from "../services/GithubService";
+import {
+  fetchRepositories,
+  deleteRepository,
+} from "../services/GithubService";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const Tab1: React.FC = () => {
@@ -21,18 +25,42 @@ const Tab1: React.FC = () => {
   const [loading, setLoading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState("");
 
+  const history = useHistory();
+
   const loadRepositories = async () => {
     setLoading(true);
-    fetchRepositories()
-      .then((reposData) => setRepos(reposData))
-      .catch((error) => setErrorMsg(error.message))
-      .finally(() => setLoading(false));
+    setErrorMsg("");
+
+    try {
+      const reposData = await fetchRepositories();
+      setRepos(reposData);
+    } catch (error: any) {
+      setErrorMsg(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useIonViewWillEnter(() => {
     loadRepositories();
   });
 
+  const handleEdit = (repo: Repository) => {
+    history.replace("/tab2", { repo });
+  };
+
+  const handleDelete = async (repo: Repository) => {
+    if (!window.confirm(`¿Eliminar el repositorio "${repo.name}"?`)) {
+      return;
+    }
+
+    try {
+      await deleteRepository(repo.owner.login, repo.name);
+      loadRepositories();
+    } catch (error: any) {
+      setErrorMsg(error.message);
+    }
+  };
 
   return (
     <IonPage>
@@ -48,18 +76,25 @@ const Tab1: React.FC = () => {
             <IonTitle size="large">Repositorios</IonTitle>
           </IonToolbar>
         </IonHeader>
+
         {!loading && repos.length > 0 && (
           <IonList>
             {repos.map((repo) => (
               <RepoItem
-                key={repo.id} {...repo} />
+                key={repo.id}
+                {...repo}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
             ))}
           </IonList>
         )}
+
         <LoadingSpinner isOpen={loading} />
-        {errorMsg !== "" && (
+
+        {errorMsg && (
           <IonText color="danger">
-            {errorMsg}
+            <p>{errorMsg}</p>
           </IonText>
         )}
       </IonContent>

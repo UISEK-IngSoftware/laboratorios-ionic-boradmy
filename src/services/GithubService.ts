@@ -50,3 +50,34 @@ export const getUserInfo = async (): Promise<GithubUser | null> => {
     throw new Error("Error obteniendo información del usuario: " + error);
   }
 }
+
+export const updateRepository = async (
+  owner: string,
+  repo: string,
+  repository: RepositoryPayload
+): Promise<Repository | null> => {
+  try {
+    const response = await githubApiClient.patch(
+      `/repos/${owner}/${repo}`,
+      {
+        name: repository.name,
+        description: repository.description || "",
+      }
+    );
+
+    return response.data as Repository;
+  } catch (error) {
+    throw new Error("Error actualizando repositorio: " + error);
+  }
+};
+
+export const deleteRepository = async (
+  owner: string,
+  repo: string
+): Promise<void> => {
+  try {
+    await githubApiClient.delete(`/repos/${owner}/${repo}`);
+  } catch (error) {
+    throw new Error("Error eliminando repositorio: " + error);
+  }
+};
