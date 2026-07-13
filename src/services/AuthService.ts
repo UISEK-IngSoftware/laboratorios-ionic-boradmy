@@ -19,7 +19,7 @@ class AuthService {
 
     isAuthenticated(): boolean {
         return this.getUsername() !== null &&
-            this.getToken() !== null;
+               this.getToken() !== null;
     }
 
     getToken(): string | null {
@@ -30,9 +30,11 @@ class AuthService {
         return localStorage.getItem(USERNAME_KEY);
     }
 
-    getAuthHeader() {
-        if (this.isAuthenticated()) {
-            return "Basic " + btoa(`${this.getUsername()}:${this.getToken()}`);
+    getAuthHeader(): string | null {
+        const token = this.getToken();
+        if (token) {
+            // ✅ Formato correcto para GitHub
+            return `token ${token}`;
         }
         return null;
     }

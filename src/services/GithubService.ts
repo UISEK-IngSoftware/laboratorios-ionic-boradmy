@@ -5,15 +5,15 @@ import { GithubUser } from "../interfaces/GithubUser";
 import AuthService from "./AuthService";
 
 const GITHUB_API_URL = import.meta.env.VITE_GITHUB_API_URL;
-const GITHUB_API_TOKEN = import.meta.env.VITE_GITHUB_API_TOKEN;
 
 const githubApiClient = axios.create({
   baseURL: GITHUB_API_URL,
   headers: {
-    Authorization: AuthService.getAuthHeader() || '',
+    Authorization: AuthService.getAuthHeader() || "",
   },
 });
 
+// Obtener repositorios del usuario autenticado
 export const fetchRepositories = async (): Promise<Repository[]> => {
   try {
     const response = await githubApiClient.get("/user/repos", {
@@ -22,62 +22,86 @@ export const fetchRepositories = async (): Promise<Repository[]> => {
         sort: "created",
         direction: "desc",
         affiliation: "owner",
-        t: Date.now()
-      }
+        t: Date.now(),
+      },
     });
-    return response.data as Repository[];
-  }
-  catch (error) {
-    throw new Error("Error obteniendo repositorios: " + error);
-  }
-}
 
+    const data = response.data;
 
-export const createRepository = async (repository: RepositoryPayload): Promise<Repository | null> => {
+    if (Array.isArray(data)) {
+      return data as Repository[];
+    } else {
+      // Mostrar mensaje real de GitHub si existe
+      throw new Error(data?.message || "Respuesta inválida de GitHub");
+    }
+  } catch (error: any) {
+    throw new Error("Error obteniendo repositorios: " + (error.message || error));
+  }
+};
+
+// Crear repositorio
+export const createRepository = async (
+  repository: RepositoryPayload
+): Promise<Repository | null> => {
   try {
     const response = await githubApiClient.post("/user/repos", repository);
-    return response.data as Repository;
-  } catch (error) {
-    throw new Error("Error creando repositorio: " + error);
+    const data = response.data;
+    if (data && data.id) {
+      return data as Repository;
+    }
+    throw new Error(data?.message || "Respuesta inválida al crear repositorio");
+  } catch (error: any) {
+    throw new Error("Error creando repositorio: " + (error.message || error));
   }
-}
+};
 
+// Obtener información del usuario
 export const getUserInfo = async (): Promise<GithubUser | null> => {
   try {
-    const response = await githubApiClient.get("/user",);
-    return response.data as GithubUser;
-  } catch (error) {
-    throw new Error("Error obteniendo información del usuario: " + error);
+    const response = await githubApiClient.get("/user");
+    const data = response.data;
+    if (data && data.login) {
+      return data as GithubUser;
+    }
+    throw new Error(data?.message || "Respuesta inválida al obtener usuario");
+  } catch (error: any) {
+    throw new Error("Error obteniendo información del usuario: " + (error.message || error));
   }
-}
+};
 
+// Actualizar repositorio
 export const updateRepository = async (
   owner: string,
   repo: string,
   repository: RepositoryPayload
 ): Promise<Repository | null> => {
   try {
-    const response = await githubApiClient.patch(
-      `/repos/${owner}/${repo}`,
-      {
-        name: repository.name,
-        description: repository.description || "",
-      }
-    );
+    const response = await githubApiClient.patch(`/repos/${owner}/${repo}`, {
+      name: repository.name,
+      description: repository.description || "",
+    });
 
-    return response.data as Repository;
-  } catch (error) {
-    throw new Error("Error actualizando repositorio: " + error);
+    const data = response.data;
+    if (data && data.id) {
+      return data as Repository;
+    }
+    throw new Error(data?.message || "Respuesta inválida al actualizar repositorio");
+  } catch (error: any) {
+    throw new Error("Error actualizando repositorio: " + (error.message || error));
   }
 };
 
+// Eliminar repositorio
 export const deleteRepository = async (
   owner: string,
   repo: string
 ): Promise<void> => {
   try {
-    await githubApiClient.delete(`/repos/${owner}/${repo}`);
-  } catch (error) {
-    throw new Error("Error eliminando repositorio: " + error);
+    const response = await githubApiClient.delete(`/repos/${owner}/${repo}`);
+    if (!response.status || response.status >= 400) {
+      throw new Error("Error eliminando repositorio");
+    }
+  } catch (error: any) {
+    throw new Error("Error eliminando repositorio: " + (error.message || error));
   }
 };
