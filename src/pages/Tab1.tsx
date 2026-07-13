@@ -10,33 +10,32 @@ import {
   useIonViewWillEnter,
 } from "@ionic/react";
 import { useHistory } from "react-router-dom";
+
 import "./Tab1.css";
 import RepoItem from "../components/RepoItem";
 import { Repository } from "../interfaces/Repository";
-import { fetchRepositories, deleteRepository } from "../services/GithubService";
+import {
+  fetchRepositories,
+  deleteRepository,
+} from "../services/GithubService";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const Tab1: React.FC = () => {
   const [repos, setRepos] = React.useState<Repository[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState("");
+
   const history = useHistory();
 
   const loadRepositories = async () => {
     setLoading(true);
     setErrorMsg("");
+
     try {
       const reposData = await fetchRepositories();
-      // Validar que sea un array
-      if (Array.isArray(reposData)) {
-        setRepos(reposData);
-      } else {
-        setRepos([]);
-        setErrorMsg("Los datos recibidos no son válidos.");
-      }
+      setRepos(reposData);
     } catch (error: any) {
       setErrorMsg(error.message);
-      setRepos([]);
     } finally {
       setLoading(false);
     }
@@ -54,6 +53,7 @@ const Tab1: React.FC = () => {
     if (!window.confirm(`¿Eliminar el repositorio "${repo.name}"?`)) {
       return;
     }
+
     try {
       await deleteRepository(repo.owner.login, repo.name);
       loadRepositories();
@@ -69,6 +69,7 @@ const Tab1: React.FC = () => {
           <IonTitle>Repositorios</IonTitle>
         </IonToolbar>
       </IonHeader>
+
       <IonContent fullscreen className="ion-padding">
         <IonHeader collapse="condense">
           <IonToolbar>
@@ -76,7 +77,7 @@ const Tab1: React.FC = () => {
           </IonToolbar>
         </IonHeader>
 
-        {!loading && Array.isArray(repos) && repos.length > 0 && (
+        {!loading && repos.length > 0 && (
           <IonList>
             {repos.map((repo) => (
               <RepoItem
