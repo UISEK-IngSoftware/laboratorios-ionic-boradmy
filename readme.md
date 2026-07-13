@@ -2,7 +2,7 @@
 
 ## Información del Estudiante
 
-- **Nombre:** Stiveen Paredes
+- **Nombre:** Boris Adrian Murillo Yajamin
 - **Carrera:** Ingeniería en Software
 - **Fecha de inicio:** 04 de junio de 2026
 
